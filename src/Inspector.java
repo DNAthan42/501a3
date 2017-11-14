@@ -140,7 +140,7 @@ public class Inspector {
 	 * @param exec the method or constructor to get
 	 * @return a Formatted string in the form of [Modifiers] [Name]([parameters])
 	 */
-	private String getSignature(Executable exec){
+	public String getSignature(Executable exec){
     	Parameter[] parameters = exec.getParameters();
     	String ret = "";
 
