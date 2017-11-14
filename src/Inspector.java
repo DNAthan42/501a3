@@ -140,7 +140,7 @@ public class Inspector {
 	 * @param exec the method or constructor to get
 	 * @return a Formatted string in the form of [Modifiers] [Name]([parameters])
 	 */
-	public String getSignature(Executable exec){
+	public static String getSignature(Executable exec){
     	Parameter[] parameters = exec.getParameters();
     	String ret = "";
 
@@ -183,7 +183,7 @@ public class Inspector {
 	 * 				Group 2: The type code of the array
 	 * 				Group 3: The fully qualified type name
 	 */
-	private Matcher getArrayMatcher(String code){
+	private static Matcher getArrayMatcher(String code){
 		if (code == null) return null;
 		//checks 'code' against the regex. regex looks for array types of n>0 dimensions
 		//array types occasionally have a semi colon at the end and IDK why
@@ -199,7 +199,7 @@ public class Inspector {
 	 * @param type the string to check
 	 * @return the index
 	 */
-	protected int getArrayType(String type){
+	protected static int getArrayType(String type){
 		for (int i = 0; i < ARRAY_TYPE_CODES.length; i++){
 			if (type.equals(ARRAY_TYPE_CODES[i])){
 				return i;
@@ -214,7 +214,7 @@ public class Inspector {
 	 * @param code the array code to decrypt
 	 * @return a more visually pleasing string
 	 */
-	protected String arrayCodeToFormattedString(String code){
+	protected static String arrayCodeToFormattedString(String code){
     	String ret = "";
     	String type = "";
 		Matcher matcher = getArrayMatcher(code);
