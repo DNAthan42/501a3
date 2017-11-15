@@ -42,6 +42,7 @@ public class Deserializer {
 	}
 
 	private Object elementToObject(Element element){
+		XMLOutputter outputter = new XMLOutputter();
 		//get the reference number for this object
 		int id = Integer.parseInt(element.getAttributeValue("id"));
 		//if the object has already been deserialized, return the object.
@@ -82,20 +83,30 @@ public class Deserializer {
 			if (Modifier.isFinal(field.getModifiers()) && Modifier.isStatic(field.getModifiers())) continue;
 
 			field.setAccessible(true);
-			//get new value from the element
+			//get the equivalent field from the document
 			Element eleField = findElementByAttr(element, "name", field.getName());
+
+			//get the contents of the field. There should be exactly one nested tag.
+			List<Element> eleFieldVals = eleField.getChildren();
+			if (eleFieldVals.size() != 1) {
+				System.out.println("Unexpected tags in field" + outputter.outputString(eleField));
+				return null;
+			}
+			//get teh one and only.
+			Element eleFieldVal = eleFieldVals.get(0);
+
 			//check if the new value of the field is a primitive or not.
-			if (eleField.equals("value")){
+			if (eleFieldVal.getName().equals("value")){
 				Class fType = field.getType();
 				try {
-					if (fType == double.class) field.setDouble(eleObj, Double.parseDouble(eleField.getText()));
-					else if (fType == float.class) field.setFloat(eleObj, Float.parseFloat(eleField.getText()));
-					else if (fType == long.class) field.setLong(eleObj, Long.parseLong(eleField.getText()));
-					else if (fType == int.class) field.setInt(eleObj, Integer.parseInt(eleField.getText()));
-					else if (fType == short.class) field.setShort(eleObj, Short.parseShort(eleField.getText()));
-					else if (fType == char.class) field.setChar(eleObj, eleField.getText().charAt(0));
-					else if (fType == byte.class) field.setByte(eleObj, Byte.parseByte(eleField.getText()));
-					else if (fType == boolean.class) field.setBoolean(eleObj, Boolean.parseBoolean(eleField.getText()));
+					if (fType == double.class) field.setDouble(eleObj, Double.parseDouble(eleFieldVal.getText()));
+					else if (fType == float.class) field.setFloat(eleObj, Float.parseFloat(eleFieldVal.getText()));
+					else if (fType == long.class) field.setLong(eleObj, Long.parseLong(eleFieldVal.getText()));
+					else if (fType == int.class) field.setInt(eleObj, Integer.parseInt(eleFieldVal.getText()));
+					else if (fType == short.class) field.setShort(eleObj, Short.parseShort(eleFieldVal.getText()));
+					else if (fType == char.class) field.setChar(eleObj, eleFieldVal.getText().charAt(0));
+					else if (fType == byte.class) field.setByte(eleObj, Byte.parseByte(eleFieldVal.getText()));
+					else if (fType == boolean.class) field.setBoolean(eleObj, Boolean.parseBoolean(eleFieldVal.getText()));
 					else {
 						System.out.println("Cannot assign primitive to non primitive field.");
 						return null;
@@ -106,8 +117,8 @@ public class Deserializer {
 				}
 			}
 			// if not, recursively deserialize the next element and set the field to that when finished.
-			else if (eleField.getName().equals("reference")){
-				int reference = Integer.parseInt(eleField.getText());
+			else if (eleFieldVal.getName().equals("reference")){
+				int reference = Integer.parseInt(eleFieldVal.getText());
 				try {
 					if (deserialized.containsKey(reference)) {
 						field.set(eleObj, deserialized.get(reference));
@@ -120,8 +131,8 @@ public class Deserializer {
 				}
 			}
 			else { //malformatted input
-				XMLOutputter outputter = new XMLOutputter();
-				System.out.println("Unexpected tag" + outputter.outputString(eleField));
+				System.out.println("Unexpected tag" + outputter.outputString(eleFieldVal));
+				System.out.println(eleFieldVal.getName());
 				return null;
 			}
 		}
