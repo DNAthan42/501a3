@@ -5,15 +5,18 @@ import org.jdom2.Text;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.IdentityHashMap;
 import java.util.LinkedList;
 
 public class Serializer {
 
-	LinkedList<IndexedObject> references;
-	int counter;
+	private LinkedList<IndexedObject> references;
+	private IdentityHashMap<Object, Integer> serialized;
+	private int counter;
 
 	public Serializer(){
 		references = new LinkedList<>();
+		serialized = new IdentityHashMap<>();
 		counter = 0;
 	}
 
@@ -33,14 +36,31 @@ public class Serializer {
 		return new Document(root);
 	}
 
+	private int getReference(Object obj){
+		//If the object has already been serialized, return it's reference number
+		if (serialized.containsKey(obj)){
+			return serialized.get(obj);
+		}
+		//otherwise, mark this object for serialization, assign it a reference number, and return that.
+		int ret = counter++;
+		references.add(new IndexedObject(obj, ret));
+		return ret;
+	}
+
 	private Element objectToElement(IndexedObject io){
 		if (io.obj.getClass().isArray()) return arrayToElement(io);
 		int id = io.reference;
 		Object obj = io.obj;
+
+		//mark this object as serialized
+		serialized.put(obj, id);
+
+		//create the top of the object tag
 		Element object = new Element("object");
 		Class objClass = obj.getClass();
 		object.setAttribute("class", objClass.toString());
 		object.setAttribute("id", Integer.toString(id));
+
 
 		//get all the fields of the object, so they can be added
 		for (Field f: getAllFields(objClass)){
@@ -66,9 +86,8 @@ public class Serializer {
 				Element reference = new Element("reference");
 				f.setAccessible(true);
 				try {
-					int newId = counter++;
-					references.add(new IndexedObject(f.get(obj), newId));
-					reference.addContent(Integer.toString(id));
+					int refNumber = getReference(f.get(obj)); //get the value of the field, and mark the value for serialization if it hasn't been seen yet
+					reference.addContent(Integer.toString(refNumber));
 				} catch (IllegalAccessException e) {
 					System.out.printf("field %s could not be accessed", f.getName());
 					reference.addContent(new Text("Error"));
@@ -83,6 +102,11 @@ public class Serializer {
 	private Element arrayToElement(IndexedObject io){
 		int id = io.reference;
 		Object[] obj = (Object[]) io.obj;
+
+		//mark this object as serialized
+		serialized.put(obj, id);
+
+		//create the top of the object tag
 		Element array = new Element("object");
 		Class arrClass = obj.getClass();
 		array.setAttribute("class", arrClass.toString());
