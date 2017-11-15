@@ -61,7 +61,7 @@ public class Serializer {
 		//create the top of the object tag
 		Element object = new Element("object");
 		Class objClass = obj.getClass();
-		object.setAttribute("class", objClass.toString());
+		object.setAttribute("class", objClass.getName());
 		object.setAttribute("id", Integer.toString(id));
 
 
@@ -69,7 +69,7 @@ public class Serializer {
 		for (Field f: getAllFields(objClass)){
 			Element field = new Element("field");
 			field.setAttribute("name", f.getName());
-			field.setAttribute("declaringclass", f.getDeclaringClass().toString());
+			field.setAttribute("declaringclass", f.getDeclaringClass().getName());
 
 			//get the value of the field
 			//if primitive, include the child element

@@ -1,5 +1,6 @@
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
 import java.lang.reflect.Field;
@@ -19,6 +20,8 @@ public class Deserializer {
 	}
 
 	public Object deserialize(Document document){
+		XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
+		System.out.println(outputter.outputString(document));
 		root = document.getRootElement();
 		Element firstObject = findFirstElement(root);
 		if (firstObject == null) return null;
