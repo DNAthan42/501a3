@@ -30,7 +30,9 @@ public class Serializer {
 		//while there are referenced objects to serialize, serialize them
 		//These objects may also reference objects, which will be added to the end of the list.
 		while (!references.isEmpty()){
-			root.addContent(objectToElement(references.remove()));
+			IndexedObject next = references.remove();
+			if (!serialized.containsKey(next.obj))
+				root.addContent(objectToElement(next));
 		}
 
 		return new Document(root);
