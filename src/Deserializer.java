@@ -3,6 +3,7 @@ import org.jdom2.Element;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -143,34 +144,32 @@ public class Deserializer {
 
 	private Object elementToArray(Element element){
 		String className = element.getAttributeValue("class");
+		System.out.print(className);
 		Matcher m = Inspector.getArrayMatcher(className);
-		Object[] array = null;
+		Object array = null;
 
 		if (m.group(2).equals("L")) { //reference type array
 			List<Element> children = element.getChildren();
 			Class arrClass;
 			//try to create the array.
 			try {
-				arrClass = Class.forName(className);
-				array = (Object[]) arrClass.newInstance();
+				arrClass = Class.forName(m.group(3));
+				array = Array.newInstance(arrClass, Integer.parseInt(element.getAttributeValue("length")));
 			} catch (ClassNotFoundException e) {
 				System.out.println("Could not resolve array of type " + className);
-				return null;
-			} catch (IllegalAccessException e) {
-				System.out.println("Not allowed to create array of type " + className);
-				return null;
-			} catch (InstantiationException e) {
-				System.out.println("Error while creating array of type " + className);
 				return null;
 			}
 			//iterate over each reference tag in the array object
 			for (int i = 0; i < children.size(); i++){
 				Element index = children.get(i);
 				if (deserialized.containsKey(Integer.parseInt(index.getText()))){
-					array[i] = deserialized.get(Integer.parseInt(index.getText()));
+					Array.set(array, i, deserialized.get(Integer.parseInt(index.getText())));
 				}
 				else {
-					array [i] = elementToObject(findElementByAttr(root, "is", index.getText()));
+					System.out.println(index.getText());
+					Object test = elementToObject(findElementByAttr(root, "id", index.getText()));
+					System.out.print(test);
+					Array.set(array, i, elementToObject(findElementByAttr(root, "id", index.getText())));
 				}
 			}
 			return array;
