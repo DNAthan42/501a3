@@ -28,7 +28,7 @@ public class ObjectCreator {
 		System.out.println("Object Creator\n");
 		while (moreObjects){
 			//prompt for object type
-			System.out.println("Availble Classes:");
+			System.out.println("Available Classes:");
 			System.out.println("ClassA, ClassB, ClassC, ClassD");
 			System.out.print("Desired Class: ");
 			classInput = in.next();
@@ -51,11 +51,30 @@ public class ObjectCreator {
 
 			try{
 				objList.add(classType.newInstance());
+				System.out.println("Done.");
 			} catch (IllegalAccessException e){
 				System.out.println("Could not access the constructor. No object created");
 
 			} catch (InstantiationException e){
 				System.out.println("Could not create the object.");
+			}
+
+			System.out.println("Create another object?");
+			boolean validResponse = false;
+			while (!validResponse) {
+				System.out.print("(y/n): ");
+				String response = in.next().toLowerCase();
+				System.out.println();
+				if (response.equals("y") || response.equals("ye") || response.equals("yes")) {
+					moreObjects = true;
+					validResponse = true;
+				} else if (response.equals("n") || response.equals("no")) {
+					moreObjects = false;
+					validResponse = true;
+				}
+				else {
+					System.out.println("Please, either \'yes\' or \'no\'");
+				}
 			}
 		}
 
