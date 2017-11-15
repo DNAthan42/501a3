@@ -1,4 +1,5 @@
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Parameter;
 import java.util.LinkedList;
 import java.util.Scanner;
 
@@ -31,6 +32,7 @@ public class ObjectCreator {
 			System.out.println("ClassA, ClassB, ClassC, ClassD");
 			System.out.print("Desired Class: ");
 			classInput = in.next();
+			System.out.println();
 
 			//try to get the class reflectively
 			try {
@@ -47,10 +49,13 @@ public class ObjectCreator {
 				}
 			}
 
-			// get the constructors so we can find the arguments needed.
-			constructors = classType.getConstructors();
-			for (Constructor c: constructors){
+			try{
+				objList.add(classType.newInstance());
+			} catch (IllegalAccessException e){
+				System.out.println("Could not access the constructor. No object created");
 
+			} catch (InstantiationException e){
+				System.out.println("Could not create the object.");
 			}
 		}
 
