@@ -11,7 +11,7 @@ import java.util.LinkedList;
 public class Serializer {
 
 	private LinkedList<IndexedObject> references;
-	private IdentityHashMap<Object, Integer> serialized;
+	public IdentityHashMap<Object, Integer> serialized;
 	private int counter;
 
 	public Serializer(){
@@ -36,7 +36,7 @@ public class Serializer {
 		return new Document(root);
 	}
 
-	private int getReference(Object obj){
+	public int getReference(Object obj){
 		//If the object has already been serialized, return it's reference number
 		if (serialized.containsKey(obj)){
 			return serialized.get(obj);
@@ -101,7 +101,7 @@ public class Serializer {
 
 	private Element arrayToElement(IndexedObject io){
 		int id = io.reference;
-		Object[] obj = (Object[]) io.obj;
+		Object obj = io.obj;
 
 		//mark this object as serialized
 		serialized.put(obj, id);
@@ -111,7 +111,7 @@ public class Serializer {
 		Class arrClass = obj.getClass();
 		array.setAttribute("class", arrClass.toString());
 		array.setAttribute("id", Integer.toString(id));
-		array.setAttribute("length", Integer.toString(Array.getLength(obj.length)));
+		array.setAttribute("length", Integer.toString(Array.getLength(obj)));
 
 		//iterate over everything in the array, so they can be added
 		for (int i = 0; i < Array.getLength(obj); i++){
@@ -125,9 +125,8 @@ public class Serializer {
 			//otherwise, include the reference child and add the object to the queue
 			else {
 				Element reference = new Element("reference");
-				int newId = counter++;
-				references.add(new IndexedObject(thisObj, newId));
-				reference.addContent(Integer.toString(id));
+				int refNumber = getReference(thisObj); //get the value of the field, and mark the value for serialization if it hasn't been seen yet
+				reference.addContent(Integer.toString(refNumber));
 				array.addContent(reference);
 			}
 		}
