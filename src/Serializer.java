@@ -21,18 +21,18 @@ public class Serializer {
 		Element root = new Element("serialized");
 
 		//serialize the object passed, collecting references into references
-		root.addContent(objectElement(obj));
+		root.addContent(objectToElement(obj));
 
 		//while there are referenced objects to serialize, serialize them
 		//These objects may also reference objects, which will be added to the end of the list.
 		while (!references.isEmpty()){
-			root.addContent(objectElement(references.remove()));
+			root.addContent(objectToElement(references.remove()));
 		}
 
 		return new Document(root);
 	}
 
-	private Element objectElement(Object obj){
+	private Element objectToElement(Object obj){
 		Element object = new Element("object");
 		Class objClass = object.getClass();
 		object.setAttribute("class", objClass.toString());
@@ -57,19 +57,15 @@ public class Serializer {
 				}
 				field.addContent(value);
 			}
-			//if an array, include several value elements
-
-
 			//otherwise, include the reference child and add the object to the queue
+			else {
+				Element reference = new Element("reference");
+				f.setAccessible(true);
+				try{
+					reference.addContent
+				}
+			}
 		}
-	}
-
-	private void addArrayToFieldElement(Element field, Object[] arr) {
-		Element array = new Element("object");
-		array.setAttribute("class", arr.getClass().toString());
-		array.setAttribute("id", Integer.toString(counter++));
-		array.setAttribute("length", Integer.toString(arr.length));
-
 	}
 
 	private LinkedList<Field> getAllFields(Class c){
