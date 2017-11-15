@@ -83,19 +83,19 @@ public class Deserializer {
 
 			field.setAccessible(true);
 			//get new value from the element
-			Element value = findElementByAttr(element, "name", field.getName());
+			Element eleField = findElementByAttr(element, "name", field.getName());
 			//check if the new value of the field is a primitive or not.
-			if (value.getName().equals("value")){
+			if (eleField.equals("value")){
 				Class fType = field.getType();
 				try {
-					if (fType == double.class) field.setDouble(eleObj, Double.parseDouble(value.getText()));
-					else if (fType == float.class) field.setFloat(eleObj, Float.parseFloat(value.getText()));
-					else if (fType == long.class) field.setLong(eleObj, Long.parseLong(value.getText()));
-					else if (fType == int.class) field.setInt(eleObj, Integer.parseInt(value.getText()));
-					else if (fType == short.class) field.setShort(eleObj, Short.parseShort(value.getText()));
-					else if (fType == char.class) field.setChar(eleObj, value.getText().charAt(0));
-					else if (fType == byte.class) field.setByte(eleObj, Byte.parseByte(value.getText()));
-					else if (fType == boolean.class) field.setBoolean(eleObj, Boolean.parseBoolean(value.getText()));
+					if (fType == double.class) field.setDouble(eleObj, Double.parseDouble(eleField.getText()));
+					else if (fType == float.class) field.setFloat(eleObj, Float.parseFloat(eleField.getText()));
+					else if (fType == long.class) field.setLong(eleObj, Long.parseLong(eleField.getText()));
+					else if (fType == int.class) field.setInt(eleObj, Integer.parseInt(eleField.getText()));
+					else if (fType == short.class) field.setShort(eleObj, Short.parseShort(eleField.getText()));
+					else if (fType == char.class) field.setChar(eleObj, eleField.getText().charAt(0));
+					else if (fType == byte.class) field.setByte(eleObj, Byte.parseByte(eleField.getText()));
+					else if (fType == boolean.class) field.setBoolean(eleObj, Boolean.parseBoolean(eleField.getText()));
 					else {
 						System.out.println("Cannot assign primitive to non primitive field.");
 						return null;
@@ -106,8 +106,8 @@ public class Deserializer {
 				}
 			}
 			// if not, recursively deserialize the next element and set the field to that when finished.
-			else if (value.getName().equals("reference")){
-				int reference = Integer.parseInt(value.getText());
+			else if (eleField.getName().equals("reference")){
+				int reference = Integer.parseInt(eleField.getText());
 				try {
 					if (deserialized.containsKey(reference)) {
 						field.set(eleObj, deserialized.get(reference));
@@ -121,7 +121,7 @@ public class Deserializer {
 			}
 			else { //malformatted input
 				XMLOutputter outputter = new XMLOutputter();
-				System.out.println("Unexpected tag" + outputter.outputString(value));
+				System.out.println("Unexpected tag" + outputter.outputString(eleField));
 				return null;
 			}
 		}
