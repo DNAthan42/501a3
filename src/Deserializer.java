@@ -2,6 +2,7 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -70,8 +71,28 @@ public class Deserializer {
 		deserialized.put(id, eleObj);
 
 		//match fields of this object to values provided
-		Field[] fields = eleClass.getDeclaredFields();
+		LinkedList<Field> fields = getAllFields(eleClass);
+		for (Field field: fields){
+			field.setAccessible(true);
+			//get new value from doc
+			element.get()
+			//check if the new value of the field is a primitive or not.
+
+		}
 
 
+	}
+
+	private LinkedList<Field> getAllFields(Class c){
+		//end of recursion, return Object's fields.
+		if (c.equals(Object.class)){
+			return new LinkedList<>(Arrays.asList(c.getDeclaredFields()));
+		}
+		//otherwise, append c's fields to all the fields of all superclasses
+		else {
+			LinkedList<Field> superFields = getAllFields(c.getSuperclass());
+			superFields.addAll(Arrays.asList(c.getDeclaredFields()));
+			return superFields;
+		}
 	}
 }
