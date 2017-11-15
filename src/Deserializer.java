@@ -1,4 +1,3 @@
-import com.sun.org.apache.xpath.internal.WhitespaceStrippingElementMatcher;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.XMLOutputter;
@@ -12,7 +11,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 
 public class Deserializer {
-	//private LinkedList<IndexedObject> references;
 	public IdentityHashMap<Integer, Object> deserialized;
 	private Element root;
 
