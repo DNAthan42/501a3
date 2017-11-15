@@ -1,5 +1,6 @@
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Parameter;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Scanner;
 
@@ -9,7 +10,7 @@ public class ObjectCreator {
 	private LinkedList<Object> objList;
 
 	public static void main(String[] args){
-		new ObjectCreator().create();
+		System.out.println(Arrays.toString(new ObjectCreator().create()));
 	}
 
 	public ObjectCreator(){
