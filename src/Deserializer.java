@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Matcher;
 
 public class Deserializer {
 	//private LinkedList<IndexedObject> references;
@@ -86,14 +87,14 @@ public class Deserializer {
 			if (value.getName().equals("value")){
 				Class fType = field.getType();
 				try {
-					if (fType == double.class) field.setDouble(eleObj, new Double(value.getText()));
-					else if (fType == float.class) field.setFloat(eleObj, new Float(value.getText()));
-					else if (fType == long.class) field.setLong(eleObj, new Long(value.getText()));
-					else if (fType == int.class) field.setInt(eleObj, new Integer(value.getText()));
-					else if (fType == short.class) field.setShort(eleObj, new Short(value.getText()));
+					if (fType == double.class) field.setDouble(eleObj, Double.parseDouble(value.getText()));
+					else if (fType == float.class) field.setFloat(eleObj, Float.parseFloat(value.getText()));
+					else if (fType == long.class) field.setLong(eleObj, Long.parseLong(value.getText()));
+					else if (fType == int.class) field.setInt(eleObj, Integer.parseInt(value.getText()));
+					else if (fType == short.class) field.setShort(eleObj, Short.parseShort(value.getText()));
 					else if (fType == char.class) field.setChar(eleObj, value.getText().charAt(0));
-					else if (fType == byte.class) field.setByte(eleObj, new Byte(value.getText()));
-					else if (fType == boolean.class) field.setBoolean(eleObj, new Boolean(value.getText()));
+					else if (fType == byte.class) field.setByte(eleObj, Byte.parseByte(value.getText()));
+					else if (fType == boolean.class) field.setBoolean(eleObj, Boolean.parseBoolean(value.getText()));
 					else {
 						System.out.println("Cannot assign primitive to non primitive field.");
 						return null;
@@ -105,7 +106,6 @@ public class Deserializer {
 			}
 			// if not, recursively deserialize the next element and set the field to that when finished.
 			else if (value.getName().equals("reference")){
-				Class fType = field.getType();
 				int reference = Integer.parseInt(value.getText());
 				try {
 					if (deserialized.containsKey(reference)) {
@@ -129,6 +129,57 @@ public class Deserializer {
 
 	}
 
+	private Object elementToArray(Element element){
+		String className = element.getAttributeValue("class");
+		Matcher m = Inspector.getArrayMatcher(className);
+		Object[] array = null;
+
+		if (m.group(2).equals("L")) { //reference type array
+			List<Element> children = element.getChildren();
+			Class arrClass;
+			//try to create the array.
+			try {
+				arrClass = Class.forName(className);
+				array = (Object[]) arrClass.newInstance();
+			} catch (ClassNotFoundException e) {
+				System.out.println("Could not resolve array of type " + className);
+				return null;
+			} catch (IllegalAccessException e) {
+				System.out.println("Not allowed to create array of type " + className);
+				return null;
+			} catch (InstantiationException e) {
+				System.out.println("Error while creating array of type " + className);
+				return null;
+			}
+			//iterate over each reference tag in the array object
+			for (int i = 0; i < children.size(); i++){
+				Element index = children.get(i);
+				if (deserialized.containsKey(Integer.parseInt(index.getText()))){
+					array[i] = deserialized.get(Integer.parseInt(index.getText()));
+				}
+				else {
+					array [i] = elementToObject(findElementByAttr(root, "is", index.getText()));
+				}
+			}
+			return array;
+		}
+		else {
+			String type = m.group(2);
+			if (type.equals("B")) return elementToByteArr(element);
+			else if (type.equals("C")) return elementToCharArr(element);
+			else if (type.equals("D")) return elementToDoubleArr(element);
+			else if (type.equals("F")) return elementToFloatArr(element);
+			else if (type.equals("I")) return elementToIntArr(element);
+			else if (type.equals("J")) return elementToLongArr(element);
+			else if (type.equals("S")) return elementToShortArr(element);
+			else if (type.equals("Z")) return elementToBooleanArr(element);
+			else {
+				System.out.println("Invalid Array type code");
+				return null;
+			}
+		}
+	}
+
 	private Element findElementByAttr(Element parent, String attr, String val){
 		for (Element element: parent.getChildren()){
 			if (element.getAttributeValue(attr).equals(val)){
@@ -149,5 +200,100 @@ public class Deserializer {
 			superFields.addAll(Arrays.asList(c.getDeclaredFields()));
 			return superFields;
 		}
+	}
+
+	private double[] elementToDoubleArr(Element element){
+		List<Element> children = element.getChildren();
+		double[] ret = new double[Integer.parseInt(element.getAttributeValue("length"))];
+
+		for (int i = 0; i < children.size(); i++){
+			Element index = children.get(i);
+			ret[i] = Double.parseDouble(index.getText());
+		}
+
+		return ret;
+	}
+
+	private float[] elementToFloatArr(Element element) {
+		List<Element> children = element.getChildren();
+		float[] ret = new float[Integer.parseInt(element.getAttributeValue("length"))];
+
+		for (int i = 0; i < children.size(); i++) {
+			Element index = children.get(i);
+			ret[i] = Float.parseFloat(index.getText());
+		}
+
+		return ret;
+	}
+
+	private long[] elementToLongArr(Element element) {
+		List<Element> children = element.getChildren();
+		long[] ret = new long[Integer.parseInt(element.getAttributeValue("length"))];
+
+		for (int i = 0; i < children.size(); i++) {
+			Element index = children.get(i);
+			ret[i] = Long.parseLong(index.getText());
+		}
+
+		return ret;
+	}
+
+	private int[] elementToIntArr(Element element) {
+		List<Element> children = element.getChildren();
+		int[] ret = new int[Integer.parseInt(element.getAttributeValue("length"))];
+
+		for (int i = 0; i < children.size(); i++) {
+			Element index = children.get(i);
+			ret[i] = Integer.parseInt(index.getText());
+		}
+
+		return ret;
+	}
+
+	private short[] elementToShortArr(Element element) {
+		List<Element> children = element.getChildren();
+		short[] ret = new short[Integer.parseInt(element.getAttributeValue("length"))];
+
+		for (int i = 0; i < children.size(); i++) {
+			Element index = children.get(i);
+			ret[i] = Short.parseShort(index.getText());
+		}
+
+		return ret;
+	}
+
+	private byte[] elementToByteArr(Element element) {
+		List<Element> children = element.getChildren();
+		byte[] ret = new byte[Integer.parseInt(element.getAttributeValue("length"))];
+
+		for (int i = 0; i < children.size(); i++) {
+			Element index = children.get(i);
+			ret[i] = Byte.parseByte(index.getText());
+		}
+
+		return ret;
+	}
+
+	private boolean[] elementToBooleanArr(Element element) {
+		List<Element> children = element.getChildren();
+		boolean[] ret = new boolean[Integer.parseInt(element.getAttributeValue("length"))];
+
+		for (int i = 0; i < children.size(); i++) {
+			Element index = children.get(i);
+			ret[i] = Boolean.parseBoolean(index.getText());
+		}
+
+		return ret;
+	}
+
+	private char[] elementToCharArr(Element element) {
+		List<Element> children = element.getChildren();
+		char[] ret = new char[Integer.parseInt(element.getAttributeValue("length"))];
+
+		for (int i = 0; i < children.size(); i++){
+			Element index = children.get(i);
+			ret[i] = index.getText().charAt(0);
+		}
+		return ret;
 	}
 }
