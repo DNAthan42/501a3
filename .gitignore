@@ -23,3 +23,8 @@ hs_err_pid*
 #intellij directories
 /.idea
 /out
+
+#other build directories
+/META-INF
+/Receiver
+/Sender
