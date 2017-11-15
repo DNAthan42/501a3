@@ -113,7 +113,7 @@ public class Serializer {
 		//create the top of the object tag
 		Element array = new Element("object");
 		Class arrClass = obj.getClass();
-		array.setAttribute("class", arrClass.toString());
+		array.setAttribute("class", arrClass.getName());
 		array.setAttribute("id", Integer.toString(id));
 		array.setAttribute("length", Integer.toString(Array.getLength(obj)));
 

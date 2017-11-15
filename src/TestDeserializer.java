@@ -19,4 +19,10 @@ public class TestDeserializer {
 		ClassA obj = new ClassA();
 		assertEquals(deserializer.deserialize(serializer.serialize(obj)), obj);
 	}
+
+	@Test
+	public void TestOnlyReferenceClass(){
+		ClassB obj = new ClassB();
+		assertEquals(deserializer.deserialize(serializer.serialize(obj)), obj);
+	}
 }
