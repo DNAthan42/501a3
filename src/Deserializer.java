@@ -144,7 +144,6 @@ public class Deserializer {
 
 	private Object elementToArray(Element element){
 		String className = element.getAttributeValue("class");
-		System.out.print(className);
 		Matcher m = Inspector.getArrayMatcher(className);
 		Object array = null;
 
@@ -166,9 +165,7 @@ public class Deserializer {
 					Array.set(array, i, deserialized.get(Integer.parseInt(index.getText())));
 				}
 				else {
-					System.out.println(index.getText());
 					Object test = elementToObject(findElementByAttr(root, "id", index.getText()));
-					System.out.print(test);
 					Array.set(array, i, elementToObject(findElementByAttr(root, "id", index.getText())));
 				}
 			}
