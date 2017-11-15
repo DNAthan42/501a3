@@ -14,4 +14,15 @@ public class ClassA implements XMLSerializable {
 		dub = 0.0;
 		maybe = false;
 	}
+
+	@Override
+	public boolean equals(Object obj) {
+		ClassA other;
+		if (obj.getClass().equals(this.getClass())){
+			other = (ClassA) obj;
+		}
+		else return false;
+
+		return integer == other.integer && dub == other.dub && maybe == other.maybe;
+	}
 }
