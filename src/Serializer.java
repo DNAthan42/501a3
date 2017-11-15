@@ -1,6 +1,7 @@
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.Text;
+import org.jdom2.output.XMLOutputter;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -96,6 +97,7 @@ public class Serializer {
 				}
 				field.addContent(reference);
 			}
+			object.addContent(field);
 		}
 		// return the now populated element.
 		return object;
@@ -119,7 +121,7 @@ public class Serializer {
 		for (int i = 0; i < Array.getLength(obj); i++){
 			Object thisObj = Array.get(obj, i);
 			//if primitive, include the child element
-			if (thisObj.getClass().isPrimitive()){
+			if (thisObj.getClass().isPrimitive() || isWrapper(thisObj.getClass())){
 				Element value = new Element("value");
 				value.addContent(new Text(thisObj.toString()));
 				array.addContent(value);
@@ -147,5 +149,11 @@ public class Serializer {
 			superFields.addAll(Arrays.asList(c.getDeclaredFields()));
 			return superFields;
 		}
+	}
+
+	private boolean isWrapper(Class c){
+		return (c == Double.class	|| c == Float.class 	|| c == Long.class ||
+				c == Integer.class	|| c == Short.class 	|| c == Character.class ||
+				c == Byte.class		|| c == Boolean.class);
 	}
 }
