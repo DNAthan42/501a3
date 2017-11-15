@@ -183,7 +183,7 @@ public class Inspector {
 	 * 				Group 2: The type code of the array
 	 * 				Group 3: The fully qualified type name
 	 */
-	private static Matcher getArrayMatcher(String code){
+	protected static Matcher getArrayMatcher(String code){
 		if (code == null) return null;
 		//checks 'code' against the regex. regex looks for array types of n>0 dimensions
 		//array types occasionally have a semi colon at the end and IDK why

@@ -2,13 +2,14 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.Text;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.LinkedList;
 
 public class Serializer {
 
-	LinkedList<Element> references;
+	LinkedList<IndexedObject> references;
 	int counter;
 
 	public Serializer(){
@@ -21,7 +22,7 @@ public class Serializer {
 		Element root = new Element("serialized");
 
 		//serialize the object passed, collecting references into references
-		root.addContent(objectToElement(obj));
+		references.add(new IndexedObject(obj, counter++));
 
 		//while there are referenced objects to serialize, serialize them
 		//These objects may also reference objects, which will be added to the end of the list.
@@ -32,11 +33,14 @@ public class Serializer {
 		return new Document(root);
 	}
 
-	private Element objectToElement(Object obj){
+	private Element objectToElement(IndexedObject io){
+		if (io.obj.getClass().isArray()) return arrayToElement(io);
+		int id = io.reference;
+		Object obj = io.obj;
 		Element object = new Element("object");
-		Class objClass = object.getClass();
+		Class objClass = obj.getClass();
 		object.setAttribute("class", objClass.toString());
-		object.setAttribute("id", Integer.toString(counter++));
+		object.setAttribute("id", Integer.toString(id));
 
 		//get all the fields of the object, so they can be added
 		for (Field f: getAllFields(objClass)){
@@ -61,11 +65,50 @@ public class Serializer {
 			else {
 				Element reference = new Element("reference");
 				f.setAccessible(true);
-				try{
-					reference.addContent
+				try {
+					int newId = counter++;
+					references.add(new IndexedObject(f.get(obj), newId));
+					reference.addContent(Integer.toString(id));
+				} catch (IllegalAccessException e) {
+					System.out.printf("field %s could not be accessed", f.getName());
+					reference.addContent(new Text("Error"));
 				}
+				field.addContent(reference);
 			}
 		}
+		// return the now populated element.
+		return object;
+	}
+
+	private Element arrayToElement(IndexedObject io){
+		int id = io.reference;
+		Object[] obj = (Object[]) io.obj;
+		Element array = new Element("object");
+		Class arrClass = obj.getClass();
+		array.setAttribute("class", arrClass.toString());
+		array.setAttribute("id", Integer.toString(id));
+		array.setAttribute("length", Integer.toString(Array.getLength(obj.length)));
+
+		//iterate over everything in the array, so they can be added
+		for (int i = 0; i < Array.getLength(obj); i++){
+			Object thisObj = Array.get(obj, i);
+			//if primitive, include the child element
+			if (thisObj.getClass().isPrimitive()){
+				Element value = new Element("value");
+				value.addContent(new Text(thisObj.toString()));
+				array.addContent(value);
+			}
+			//otherwise, include the reference child and add the object to the queue
+			else {
+				Element reference = new Element("reference");
+				int newId = counter++;
+				references.add(new IndexedObject(thisObj, newId));
+				reference.addContent(Integer.toString(id));
+				array.addContent(reference);
+			}
+		}
+		//return the now populated element.
+		return array;
 	}
 
 	private LinkedList<Field> getAllFields(Class c){
