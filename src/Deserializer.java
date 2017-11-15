@@ -161,7 +161,10 @@ public class Deserializer {
 			//iterate over each reference tag in the array object
 			for (int i = 0; i < children.size(); i++){
 				Element index = children.get(i);
-				if (deserialized.containsKey(Integer.parseInt(index.getText()))){
+				if(index.getText() == null || index.getText().equals("null")){
+					Array.set(array, i, null);
+				}
+				else if (deserialized.containsKey(Integer.parseInt(index.getText()))){
 					Array.set(array, i, deserialized.get(Integer.parseInt(index.getText())));
 				}
 				else {

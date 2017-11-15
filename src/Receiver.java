@@ -1,8 +1,10 @@
 import org.jdom2.Document;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedList;
@@ -18,7 +20,8 @@ public class Receiver {
 			socket = new ServerSocket(Integer.parseInt(args[0]));
 			//initial connection
 			Socket init = socket.accept();
-			amount = init.getInputStream().read(new byte[4]); //4 being the max size of an int
+			amount = new DataInputStream(init.getInputStream()).readInt();
+			System.out.println("accepting " + amount + " objects");
 
 		} catch (IOException e){
 			System.out.println("Could not reserve socket on port " + args[0]);
@@ -52,7 +55,7 @@ public class Receiver {
 		//visualize the objects one at a time.
 		Inspector inspector = new Inspector();
 		for (Object o: objects){
-			inspector.inspect(o, false);
+			inspector.inspect(o, true);
 		}
 
 	}
@@ -70,6 +73,7 @@ class HandleClient extends Thread {
 
 	public void run(){
 		SAXBuilder builder = new SAXBuilder();
+		XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
 		Document document;
 		try{
 			document = builder.build(client.getInputStream());
@@ -81,6 +85,7 @@ class HandleClient extends Thread {
 			return;
 		}
 
+		System.out.println(outputter.outputString(document));
 		//deserialize and queue the object for viewing
 		Receiver.objects.add(deserializer.deserialize(document));
 

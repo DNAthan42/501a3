@@ -30,7 +30,7 @@ public class ObjectCreator {
 		while (moreObjects){
 			//prompt for object type
 			System.out.println("Available Classes:");
-			System.out.println("ClassA, ClassB, ClassC, ClassD");
+			System.out.println("ClassA, ClassB, ClassC, ClassD, ClassE");
 			System.out.print("Desired Class: ");
 			classInput = in.next();
 			System.out.println();
@@ -52,6 +52,7 @@ public class ObjectCreator {
 
 			try{
 				objList.add(classType.newInstance());
+				System.out.println("added a " + classType.toString());
 				System.out.println("Done.");
 			} catch (IllegalAccessException e){
 				System.out.println("Could not access the constructor. No object created");

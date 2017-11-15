@@ -51,6 +51,7 @@ public class Serializer {
 	}
 
 	private Element objectToElement(IndexedObject io){
+		System.out.println(io.obj);
 		if (io.obj.getClass().isArray()) return arrayToElement(io);
 		int id = io.reference;
 		Object obj = io.obj;
@@ -89,6 +90,7 @@ public class Serializer {
 				Element reference = new Element("reference");
 				f.setAccessible(true);
 				try {
+					if (f.get(obj) == null) continue;
 					int refNumber = getReference(f.get(obj)); //get the value of the field, and mark the value for serialization if it hasn't been seen yet
 					reference.addContent(Integer.toString(refNumber));
 				} catch (IllegalAccessException e) {
@@ -121,7 +123,12 @@ public class Serializer {
 		for (int i = 0; i < Array.getLength(obj); i++){
 			Object thisObj = Array.get(obj, i);
 			//if primitive, include the child element
-			if (thisObj.getClass().isPrimitive() || isWrapper(thisObj.getClass())){
+			if (thisObj == null){
+				Element value = new Element("value");
+				value.addContent(new Text("null"));
+				array.addContent(value);
+			}
+			else if (thisObj.getClass().isPrimitive() || isWrapper(thisObj.getClass())){
 				Element value = new Element("value");
 				value.addContent(new Text(thisObj.toString()));
 				array.addContent(value);
